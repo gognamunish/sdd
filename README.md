@@ -7,6 +7,10 @@ reviewed specs that an AI agent implements.
 It is documentation-and-scaffolding only — there is **no application code**. The point is the
 *structure*: the `.github/` harness, the templates, the workflow, and a fully worked example.
 
+> **Org-wide guidelines:** the tool- and language-agnostic version of this method, written as a
+> multi-page set for a GitLab wiki, lives in [`wiki/`](wiki/home.md). Start at
+> [`wiki/home.md`](wiki/home.md). This README documents *this demo repo* specifically.
+
 ---
 
 ## The flow in one picture
