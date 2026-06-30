@@ -27,8 +27,9 @@ making the requirement **exact and testable before** any code is generated.
 **When to apply it.** Any change with real behaviour or risk. A one-line typo fix does not need a
 spec; a new endpoint, a rule change, or anything customer- or money-facing does.
 
-> **In our setup:** the AI assistant is **GitHub Copilot**, requirements live in **GitLab** issues
-> with a `CRSU-####` key, and the assistant can read those issues via a **GitLab MCP** server.
+> **In our setup:** the AI assistant is **GitHub Copilot**; requirements are raised as `CRSU-####`
+> issues/tasks in **GAT** (the UBS UI wrapper over GitLab); and the assistant can read those issues
+> via a **GitLab MCP** server.
 
 ## The pipeline
 

@@ -43,17 +43,25 @@ Optional? · Prompt cost.**
 ---
 
 ### Stage 0 — Requirement
-- **Purpose:** capture the business need as a tracked ticket.
+- **Purpose:** capture the business need as a tracked issue / task.
 - **Why it exists:** gives every change a single referenceable origin and an audit anchor, and
   separates the *what/why* (business) from the *how* (engineering).
-- **Owner:** Business Analyst.
+- **Owner:** Business Analyst (or the requesting user).
 - **Inputs:** a business need.
-- **Output:** a ticket written at **business altitude** — goal, functional and non-functional
-  needs, acceptance criteria — using the requirement template. The BA is **not** expected to know
+- **Output:** an issue written at **business altitude** — goal, functional and non-functional
+  needs, acceptance criteria — created from the **requirement template**. The template prompts the
+  BA or user to provide as much information as possible up front. They are **not** expected to know
   the code.
 - **Quality gate:** triaged, labelled, and has at least a goal and acceptance criteria.
-- **Optional?** No. Every change traces to a ticket.
-- **Prompt cost:** none yet (no AI). Keep the ticket **structured** so later ingestion is cheap.
+- **Optional?** No. Every change traces to an issue.
+- **Prompt cost:** none yet (no AI). Keep the issue **structured** (via the template) so later
+  ingestion is cheap.
+
+> **In our setup:** the requirement is raised as an **issue/task in GAT** — the UBS UI wrapper over
+> GitLab — keyed `CRSU-####`. A shared **requirement template** in GAT guides the BA or requesting
+> user to capture goal, functional and non-functional needs, and acceptance criteria, so as much
+> detail as possible arrives with the issue. It is fine for this to be vague on technical detail —
+> the **Specify** stage (next) fills that in.
 
 ### Stage 1 — Specify → `spec.md`
 - **Purpose:** turn the vague ticket into a **precise, testable** specification.
