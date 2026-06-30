@@ -4,20 +4,58 @@ Four stages, from a vague business requirement to merged code. Each stage has a 
 **owner**, a defined **input and output**, and a **gate** that must pass before the next
 stage starts. Each artifact links back to the previous one for traceability.
 
+### The pipeline
+
+```mermaid
+flowchart LR
+    I["GitLab issue<br/>CRSU-1234<br/><br/>what &amp; why<br/>· BA ·"]
+    SP["spec.md<br/><br/>precise, testable<br/>· Eng + BA ·"]
+    PL["plan.md + contracts/<br/><br/>technical design<br/>· Architect ·"]
+    TK["tasks.md<br/><br/>ordered steps<br/>· Eng ·"]
+    CD["code + tests<br/><br/>one task per run<br/>· AI agent + Eng ·"]
+
+    I -->|"/specify · MCP pulls issue"| SP
+    SP -->|"/plan"| PL
+    PL -->|"/tasks"| TK
+    TK -->|"/implement"| CD
+    SP -.->|"Source: CRSU-1234"| I
+    CD -.->|"MR merged → close issue"| I
+
+    classDef ba fill:#fef3c7,stroke:#d97706,color:#111;
+    classDef eng fill:#dbeafe,stroke:#2563eb,color:#111;
+    classDef ai fill:#dcfce7,stroke:#16a34a,color:#111;
+    class I ba;
+    class SP,PL,TK eng;
+    class CD ai;
 ```
- Stage 0            Stage 1              Stage 2            Stage 3           Stage 4
- ───────            ───────              ───────            ───────           ───────
- GitLab issue  ──►  spec.md         ──►  plan.md       ──►  tasks.md     ──►  code + tests
- CRSU-1234          (what / why)         (how)              (steps)            (implementation)
 
- BA owns            Eng + BA own         Architect/Eng own  Eng own            AI agent + Eng own
- business intent    precise contract     technical design   work breakdown     working software
+### The handoffs and review gates
 
- [template]         /specify             /plan              /tasks             /implement
-                    (pulls issue via                                           (one task per run)
-                     GitLab MCP)
-        │                 ▲
-        └── Source: ──────┘   spec.md header links back to CRSU-1234 (two-way traceability)
+```mermaid
+sequenceDiagram
+    actor BA as Business Analyst
+    participant GL as GitLab (CRSU-1234)
+    actor ENG as Engineer
+    participant CP as Copilot agent
+    participant REPO as Repo · specs/
+    actor REV as Reviewers
+
+    BA->>GL: Raise CRSU-1234 (issue template)
+    ENG->>CP: /specify CRSU-1234
+    CP->>GL: Fetch issue (GitLab MCP)
+    CP->>REPO: Write spec.md (Source: CRSU-1234)
+    REPO->>REV: Spec review (MR)
+    REV-->>REPO: BA + Eng sign-off → spec LOCKED
+    ENG->>CP: /plan
+    CP->>REPO: Write plan.md + contracts/
+    ENG->>CP: /tasks
+    CP->>REPO: Write tasks.md
+    loop one task per run
+        ENG->>CP: /implement
+        CP->>REPO: code + tests, tick task box
+    end
+    REPO->>REV: MR review + CI green
+    REV-->>GL: Merge → close CRSU-1234
 ```
 
 ## Stage 0 — Requirement (Business Analyst)
@@ -51,6 +89,17 @@ stage starts. Each artifact links back to the previous one for traceability.
   tasks, each naming the files it touches and how it is verified.
 - **Output:** `tasks.md`.
 - **Gate:** quick sanity check that every acceptance criterion has a covering task.
+
+> **Do we always need this stage?** `tasks.md` is the **control surface for the AI agent**, not
+> paperwork for humans. Its value: each `/implement` run takes **one task**, so you get small,
+> reviewable diffs, lower per-run context cost, and fewer hallucinations than asking the agent to
+> build the whole plan at once. It also turns acceptance criteria into a verifiable checklist.
+>
+> **Scale it to the change:** for a substantial feature, keep `tasks.md` as its own artifact.
+> For a trivial change (one endpoint, a config tweak), you may **fold the task list into a
+> short section at the end of `plan.md`** and skip the separate file. What you should *not* skip
+> is the principle of **small, individually-verified steps** — that's where the reliability and
+> cost wins come from.
 
 ## Stage 4 — Implement (AI agent + Engineer)  → code + tests
 - **Input:** `tasks.md`.
