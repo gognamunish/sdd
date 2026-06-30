@@ -1,0 +1,86 @@
+openapi: 3.1.0
+info:
+  title: Refund Eligibility API
+  version: 1.0.0
+  description: >
+    Read-only check of whether a settled payment can be refunded, and by how much.
+    Source requirement: CRSU-1234. Business outcomes return 200 with reason codes;
+    HTTP error codes are reserved for malformed input and unknown payments.
+paths:
+  /v1/payments/{payment_id}/refund-eligibility:
+    post:
+      summary: Check refund eligibility for a payment
+      operationId: checkRefundEligibility
+      parameters:
+        - name: payment_id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EligibilityRequest' }
+      responses:
+        '200':
+          description: A decision was computed (eligible or not).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EligibilityResponse' }
+        '404':
+          description: No payment with that id.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '422':
+          description: Malformed request (e.g. amount not greater than zero).
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+components:
+  schemas:
+    EligibilityRequest:
+      type: object
+      required: [amount, currency]
+      properties:
+        amount:
+          type: string
+          description: Requested refund amount as a decimal string. Must be > 0.
+          example: "100.00"
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          description: ISO-4217 currency code.
+          example: "CHF"
+    EligibilityResponse:
+      type: object
+      required: [payment_id, eligible, max_refundable, currency, reasons]
+      properties:
+        payment_id: { type: string }
+        eligible: { type: boolean }
+        max_refundable:
+          type: string
+          description: Maximum refundable amount as a decimal string.
+          example: "60.00"
+        currency: { type: string, example: "CHF" }
+        reasons:
+          type: array
+          description: Failing reason codes; empty when eligible.
+          items: { $ref: '#/components/schemas/ReasonCode' }
+    ReasonCode:
+      type: string
+      enum:
+        - NOT_SETTLED
+        - CURRENCY_MISMATCH
+        - REFUND_WINDOW_EXPIRED
+        - EXCEEDS_REFUNDABLE
+        - INVALID_AMOUNT
+    Problem:
+      type: object
+      description: RFC-7807 problem document.
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
