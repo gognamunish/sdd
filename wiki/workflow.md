@@ -57,8 +57,8 @@ Optional? · Prompt cost.**
 - **Prompt cost:** none yet (no AI). Keep the issue **structured** (via the template) so later
   ingestion is cheap.
 
-> **In our setup:** the requirement is raised as an **issue/task in GAT** — the UBS UI wrapper over
-> GitLab — keyed `CRSU-####`. A shared **requirement template** in GAT guides the BA or requesting
+> **In our setup:** the requirement is raised as an **issue/task in GAT (GitLab Agile Tool)**,
+> keyed `CRSU-####`. A shared **requirement template** in GAT guides the BA or requesting
 > user to capture goal, functional and non-functional needs, and acceptance criteria, so as much
 > detail as possible arrives with the issue. It is fine for this to be vague on technical detail —
 > the **Specify** stage (next) fills that in.

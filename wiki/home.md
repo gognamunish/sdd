@@ -28,7 +28,7 @@ making the requirement **exact and testable before** any code is generated.
 spec; a new endpoint, a rule change, or anything customer- or money-facing does.
 
 > **In our setup:** the AI assistant is **GitHub Copilot**; requirements are raised as `CRSU-####`
-> issues/tasks in **GAT** (the UBS UI wrapper over GitLab); and the assistant can read those issues
+> issues/tasks in **GAT (GitLab Agile Tool)**; and the assistant can read those issues
 > via a **GitLab MCP** server.
 
 ## The pipeline
