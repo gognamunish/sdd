@@ -34,10 +34,10 @@ flowchart LR
 ```mermaid
 sequenceDiagram
     actor BA as Business Analyst
-    participant GL as GitLab (CRSU-1234)
+    participant GL as GitLab issue
     actor ENG as Engineer
     participant CP as Copilot agent
-    participant REPO as Repo · specs/
+    participant REPO as Spec repo
     actor REV as Reviewers
 
     BA->>GL: Raise CRSU-1234 (issue template)
