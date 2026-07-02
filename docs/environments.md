@@ -56,42 +56,46 @@ Business) live on the same `*-credit-summary-bs` host per environment; **Gen AI*
 Paste into the Splunk search bar and swap the `<placeholders>`:
 
 ```spl
-index="<INDEX>"                         ⟵ pick from the table above (env)
-  namespace="<NAMESPACE>"               ⟵ see Namespaces reference below
-  service="<SERVICE>"                   ⟵ presentation | data-collection | credit-summary | business
-  level="<LEVEL>"                       ⟵ optional: ERROR | WARN | INFO
-  "<free-text / correlationId>"         ⟵ optional keyword, e.g. an account id or trace id
+index="<INDEX>"                              ⟵ pick from the table above (env)
+  k8s.namespace.name="<NAMESPACE>"           ⟵ see Namespaces reference below
+  container.image.name="*<SERVICE-IMAGE>*"   ⟵ e.g. credit-summary-presentation-runner
+  level="<LEVEL>"                            ⟵ optional: ERROR | WARN | INFO
+  csRequestId="<cs_request_id>"              ⟵ optional: trace a single request
 earliest=-1h latest=now
 | sort - _time
 ```
 
-> ⚠️ **Placeholder query — confirm field names.** The field names above (`service`, `namespace`,
-> `level`) are the expected shape; adjust them to match how CFBL logs are actually indexed in your
-> `sourcetype`. If unsure, start with a bare keyword search: `index="wmpc-aa50102" "presentation"`.
+> ⚠️ **Confirm field names for your sourcetype.** `k8s.namespace.name` and `container.image.name`
+> are the expected fields; `level` / `csRequestId` may vary. If unsure, start with a bare keyword
+> search: `index="wmpc-aa50102" "presentation"`.
 
 #### 🎛️ Parameters you can pass
 
 | Parameter | What it filters | Example values |
 |:---|:---|:---|
 | `index` | **Environment** (required) | `wmpc-aa50102` (DEV/TE1) · `wmpc-aa50102-r0` (TE2) · `wmpc-aa50102-p0` (PROD) |
-| `service` | **Which microservice** | `presentation` · `data-collection` · `credit-summary` (Gen AI) · `business` |
-| `namespace` | Kubernetes namespace (per env) | see [Namespaces reference](#-reference--kubernetes-namespaces) |
+| `container.image.name` | **Which microservice** (match on the image name) | `*credit-summary-presentation-runner*` · `*credit-summary-data-collection-runner*` · `*credit-summary-runner*` (Gen AI) · `*credit-summary-business-runner*` |
+| `k8s.namespace.name` | Kubernetes namespace (per env) | see [Namespaces reference](#-reference--kubernetes-namespaces) |
 | `level` | Log severity | `ERROR` · `WARN` · `INFO` |
 | `earliest` / `latest` | Time window | `-15m` · `-1h` · `-24h@h` · `now` |
-| `correlationId` / `requestId` | Trace a single request end-to-end | `<uuid>` |
+| `csRequestId` / `cs_request_id` | Trace a single request end-to-end | `<request-id>` |
 
 #### 📋 Ready-to-use examples
 
 ```spl
 # Presentation service — errors in the last hour (DEV)
-index="wmpc-aa50102" service="presentation" level="ERROR" earliest=-1h | sort - _time
+index="wmpc-aa50102" container.image.name="*credit-summary-presentation-runner*" level="ERROR" earliest=-1h | sort - _time
 
 # Data Collection service — all logs (TE2 / UAT)
-index="wmpc-aa50102-r0" service="data-collection" earliest=-1h
+index="wmpc-aa50102-r0" container.image.name="*credit-summary-data-collection-runner*" earliest=-1h
 
-# Gen AI service — follow one request by correlation id (PROD)
-index="wmpc-aa50102-p0" service="credit-summary" "<correlationId>" earliest=-24h
+# Gen AI service — follow one request by request id (PROD)
+index="wmpc-aa50102-p0" container.image.name="*credit-summary-runner*" csRequestId="<cs_request_id>" earliest=-24h
 ```
+
+> ℹ️ Image names follow `container-registry.ubs.net/ubs/wmpc/kxt/credit-summary-<service>-runner`.
+> `credit-summary-presentation-runner` is confirmed; the other service image names are inferred
+> from this pattern — **confirm the exact names** in your container registry.
 
 ### 📈 Grafana (UK8S)
 
@@ -114,7 +118,7 @@ index="wmpc-aa50102-p0" service="credit-summary" "<correlationId>" earliest=-24h
 
 ## 🧭 Reference — Kubernetes namespaces
 
-Used in Splunk `namespace=` filters and Grafana `var-namespace`.
+Used in Splunk `k8s.namespace.name=` filters and Grafana `var-namespace`.
 
 | Env | Namespace |
 |:---|:---|
@@ -125,63 +129,10 @@ Used in Splunk `namespace=` filters and Grafana `var-namespace`.
 
 ---
 
-## 📎 Appendix — raw URLs (copy-paste)
-
-<details>
-<summary>🟢 <b>DEV · CX</b></summary>
-
-```text
-UI                     https://cx-whs-shared.ubsdev.net/app/KUA/credit-summary-dashboard/
-Gen AI Swagger         https://at61078-dev-credit-summary-bs-app-v1.uk8s-aks-neu-dev.azpriv-cloud.ubs.net/app/K16/1/credit-summary/docs
-Presentation Swagger   https://at61078-dev-credit-summary-bs-app-v1.uk8s-aks-neu-dev.azpriv-cloud.ubs.net/app/KXT/1/presentation/swagger-ui/index.html#
-Data Collection        https://at61078-dev-credit-summary-bs-app-v1.uk8s-aks-neu-dev.azpriv-cloud.ubs.net/app/KXT/1/data-collection/swagger-ui/index.html
-Business Service       https://at61078-dev-credit-summary-bs-app-v1.uk8s-aks-neu-dev.azpriv-cloud.ubs.net/app/KXT/1/business/swagger-ui/index.html
-```
-</details>
-
-<details>
-<summary>🔵 <b>TE1 · I4</b></summary>
-
-```text
-UI                     https://i4-whs-shared.ubstest.net/app/KUA/credit-summary-dashboard/
-Gen AI Swagger         https://at60723-test-credit-summary-bs-app-v1.uk8s-aks-neu-dev.azpriv-cloud.ubs.net/app/K16/1/credit-summary/docs
-Presentation Swagger   https://at60723-test-credit-summary-bs-app-v1.uk8s-aks-neu-dev.azpriv-cloud.ubs.net/app/KXT/1/presentation/swagger-ui/index.html#
-Data Collection        https://at60723-test-credit-summary-bs-app-v1.uk8s-aks-neu-dev.azpriv-cloud.ubs.net/app/KXT/1/data-collection/swagger-ui/index.html
-Business Service       https://at60723-test-credit-summary-bs-app-v1.uk8s-aks-neu-dev.azpriv-cloud.ubs.net/app/KXT/1/business/swagger-ui/index.html
-```
-</details>
-
-<details>
-<summary>🟡 <b>TE2 · R0</b> — ⚠️ mirrors TE1, verify</summary>
-
-```text
-UI                     https://i4-whs-shared.ubstest.net/app/KUA/credit-summary-dashboard/
-Gen AI Swagger         https://at60723-test-credit-summary-bs-app-v1.uk8s-aks-neu-dev.azpriv-cloud.ubs.net/app/K16/1/credit-summary/docs
-Presentation Swagger   https://at60723-test-credit-summary-bs-app-v1.uk8s-aks-neu-dev.azpriv-cloud.ubs.net/app/KXT/1/presentation/swagger-ui/index.html#
-Data Collection        https://at60723-test-credit-summary-bs-app-v1.uk8s-aks-neu-dev.azpriv-cloud.ubs.net/app/KXT/1/data-collection/swagger-ui/index.html
-Business Service       https://at60723-test-credit-summary-bs-app-v1.uk8s-aks-neu-dev.azpriv-cloud.ubs.net/app/KXT/1/business/swagger-ui/index.html
-```
-</details>
-
-<details>
-<summary>🔴 <b>PROD · P0</b> — 🔧 to be updated</summary>
-
-```text
-UI                     TBD
-Gen AI Swagger         TBD
-Presentation Swagger   TBD
-Data Collection        TBD
-Business Service       TBD
-```
-</details>
-
----
-
 ## 🛠️ Maintaining this page
 
 - 🔧 **Fill in PROD (P0)** app links once the environment is live.
 - ⚠️ **Confirm TE2 (R0)** UI/Swagger hostnames — they currently duplicate TE1.
-- ✅ When you add a service, add a **row** to the Application links matrix and a line to each
-  Appendix block.
+- ✅ When you add a service, add a **row** to the Application links matrix.
 - 🗓️ Update the **Last updated** date at the top on every change.
 - 🔐 These are internal UBS endpoints — keep this page in an access-controlled repo/wiki.
