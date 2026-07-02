@@ -3,8 +3,6 @@
 > **One place for every link the team needs** — UI, Swagger, and observability (Splunk, Grafana,
 > AppDynamics) across all environments. Bookmark this page. ⭐
 
-> 📌 **Owner:** _<team / DL>_  ·  🗓️ **Last updated:** _<YYYY-MM-DD>_  ·  ✏️ Keep it current — see [Maintaining this page](#-maintaining-this-page).
-
 ---
 
 ## 🗺️ Environment map
@@ -15,8 +13,6 @@
 | 🔵 **TE1** | `I4` | Test / SIT | ✅ | Active |
 | 🟡 **TE2** | `R0` | UAT | ✅ | Active |
 | 🔴 **PROD** | `P0` | Production | 🔧 | **Links pending — to be updated** |
-
-<sub>Naming: **Tier** is our label (DEV/TE1/TE2/PROD); **Code** is the platform environment code (CX/I4/R0/P0).</sub>
 
 ---
 
